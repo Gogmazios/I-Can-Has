@@ -1,0 +1,32 @@
+package my.hounds;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+
+/**
+ *
+ * @author Ajax
+ */
+public class GamePiece
+{
+    // Woohoo!!
+    public String pieceName; // Who!
+    public String pieceType; // What!
+    public int currentLocation; // Where!
+    public ArrayList<Integer> possibleMoves = new ArrayList<Integer>(); // Whodat!
+    
+    public GamePiece( String name, String type, int location, int[] poss) // Woo!
+    {
+        pieceName = name;
+        pieceType = type;
+        currentLocation = location;
+  
+        // Populate variable-length LIST from the ARRAY passed by the instantiator (is that a word?).
+        // Only took three hours to figure this out.
+        for (int x = 0; x < poss.length; x++)
+        {
+            possibleMoves.add(poss[x]);
+        }
+    }
+}

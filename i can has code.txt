@@ -1,0 +1,540 @@
+/**
+ *
+ * @author Ajax, not HR999 IRL but still classy
+ */
+public class HoundsUI extends javax.swing.JFrame {
+
+    // RNG
+    Random rand = new Random();
+    
+    // Whose turn: hounds | hare | none (game over)
+    String whoseTurn = "hare";
+    
+    // Traditional (i.e., Artificial Stupidity) | Hardcore (i.e., possibly entertaining...)
+    String playType = "traditional"; // Version 3.0 will have a timer.
+    
+    // Static arrays
+    BoardLocation[] boardLocations = new BoardLocation[11];
+    GamePiece[] hounds = new GamePiece[3];
+    GamePiece houndOne, houndTwo, houndThree, hare; // Erm, I need to establish this here to reference it later...
+    
+    // I CAN HAS ICONS??
+    ImageIcon houndIcon = new ImageIcon("src/my/hounds/pics/icanhaz.png");
+    ImageIcon hareIcon = new ImageIcon("src/my/hounds/pics/cheezeburger.png");
+    ImageIcon hareDefeatedIcon = new ImageIcon("src/my/hounds/pics/cheezeburger eaten.png");
+    
+    // Nothing to see here...
+    String[] catMessages = {"\"My breath smells like cat food!\"", "\"I can has... YOUR SOUL??\"", "\"Feeling lucky, punk?\"", "\"Stop poking me!\""};
+    
+    /**
+     * Creates new form HoundsUI
+     */
+    public HoundsUI() {
+        initComponents();
+        
+        // Start with a blank board. Everyone likes surprises, right?
+        locLabel1.setVisible(false);
+        locLabel2.setVisible(false);
+        locLabel3.setVisible(false);
+        locLabel4.setVisible(false);
+        locLabel5.setVisible(false);
+        locLabel6.setVisible(false);
+        locLabel7.setVisible(false);
+        locLabel8.setVisible(false);
+        locLabel9.setVisible(false);
+        locLabel10.setVisible(false);
+        locLabel11.setVisible(false);
+        messageLabel.setVisible(false);
+        skipTurnButton.setVisible(false); /* set to true if you want to test lose condition in
+                                             traditional mode, otherwise it will never happen... */
+        
+        // Instantiate um... objects... from classess...
+        // Should be renamed. I mean, I could do it now, but then what would be the point of this comment?
+        createMahStuff();
+    }
+    
+    private void createMahStuff() // I should rename this. Hint, hint.
+    {
+        // Instantiate board locations. (number, label, adjacent locations, backward locations, occupied)
+        BoardLocation locationOne = new BoardLocation(1, locLabel1, new int[]{2,3,4}, new int[] {}, 1);
+        BoardLocation locationTwo = new BoardLocation(2, locLabel2, new int[]{1,3,5,6}, new int[] {1}, 1);
+        BoardLocation locationThree = new BoardLocation(3, locLabel3, new int[]{1,2,4,6}, new int[] {1}, 0);
+        BoardLocation locationFour = new BoardLocation(4, locLabel4, new int[]{1,3,6,7}, new int[] {1}, 1);
+        BoardLocation locationFive = new BoardLocation(5, locLabel5, new int[]{2,6,8}, new int[] {2}, 0);
+        BoardLocation locationSix = new BoardLocation(6, locLabel6, new int[]{2,3,4,5,7,8,9,10}, new int[] {2,3,4}, 0);
+        BoardLocation locationSeven = new BoardLocation(7, locLabel7, new int[]{4,6,10}, new int[] {4}, 0);
+        BoardLocation locationEight = new BoardLocation(8, locLabel8, new int[]{5,6,9,11}, new int[] {5,6}, 0);
+        BoardLocation locationNine = new BoardLocation(9, locLabel9, new int[]{6,8,10,11}, new int[] {6}, 0);
+        BoardLocation locationTen = new BoardLocation(10, locLabel10, new int[]{6,7,9,11}, new int[] {6,7}, 0);
+        BoardLocation locationEleven = new BoardLocation(11, locLabel11, new int[]{8,9,10}, new int[] {8,9,10}, 1);
+        
+        // Populate array of board locations
+        boardLocations[0] = locationOne;
+        boardLocations[1] = locationTwo;
+        boardLocations[2] = locationThree;
+        boardLocations[3] = locationFour;
+        boardLocations[4] = locationFive;
+        boardLocations[5] = locationSix;
+        boardLocations[6] = locationSeven;
+        boardLocations[7] = locationEight;
+        boardLocations[8] = locationNine;
+        boardLocations[9] = locationTen;
+        boardLocations[10] = locationEleven;
+        
+        // Instantiate game pieces. (name, type, location, possible moves)
+        houndOne = new GamePiece("houndOne", "hound", 1, new int[]{3}); // Test possible moves with {}; restore to 3.
+        houndTwo = new GamePiece("houndTwo", "hound", 2, new int[]{3,5,6});
+        houndThree = new GamePiece("houndThree", "hound", 4, new int[]{3,6,7});
+        hare = new GamePiece("hare", "hare", 11, new int[]{8,9,10});
+        
+        hounds[0] = houndOne;
+        hounds[1] = houndTwo;
+        hounds[2] = houndThree;
+    }
+    
+    // Start the game
+    private void startGame()
+    {
+        // Hide splash stuff
+        startButton.setVisible(false);
+        startHardcoreButton.setVisible(false);
+        splashLabel.setVisible(false);
+        
+        // Reveal initial message
+        messageLabel.setVisible(true);
+        
+        // Reveal the game pieces
+        locLabel1.setVisible(true);
+        locLabel2.setVisible(true);
+        locLabel4.setVisible(true);
+        locLabel11.setVisible(true);
+        
+        // Hide the icons for the other board locations
+        locLabel3.setIcon(null);
+        locLabel5.setIcon(null);
+        locLabel6.setIcon(null);
+        locLabel7.setIcon(null);
+        locLabel8.setIcon(null);
+        locLabel9.setIcon(null);
+        locLabel10.setIcon(null);
+        
+        // Then make them visible so that mouse clicks will register
+        locLabel3.setVisible(true);
+        locLabel5.setVisible(true);
+        locLabel6.setVisible(true);
+        locLabel7.setVisible(true);
+        locLabel8.setVisible(true);
+        locLabel9.setVisible(true);
+        locLabel10.setVisible(true);
+        
+        // Player goes first. For reasons.
+        whoseTurn = "hare";
+    }
+   
+    // Hare's Turn
+    private void haresTurn(BoardLocation locClicked)
+    {
+        // Hare pin turn
+        if (whoseTurn.equals("hare")) // Confirming for conformity
+        {
+            
+            /* Five possibilities on player turn:
+               1) [ignore] They've selected their current location.
+               2) [ignore] They've selected a location out of range.
+               3) [feedback] They've selected a location occupied by a hound.
+               4) [move piece] They've selected a WINNING location.
+               5) [move piece] They've selected a LOSING location. (Check though, not mate.)
+               6) [move piece] They've selected an unoccupied neutral location.
+            */
+            
+            // Unlike houndsTurn, this just does checks to see if the selected location is legit.
+            // If so, it will call movePiece, otherwise it'll just give feedback (or not).
+            
+            // Location is occupied. Maybe it's a hound...
+            if ((locClicked.occupied == 1) && (locClicked != boardLocations[hare.currentLocation - 1]))
+            {
+                // Nothing to see here. Move along...
+                int x = rand.nextInt(catMessages.length);
+                String msg = catMessages[x];
+                JOptionPane.showMessageDialog(null, msg, "I CAN HAS?", JOptionPane.PLAIN_MESSAGE, houndIcon);
+            }
+            else
+            {
+                //popup("Unoccupied!");
+                BoardLocation currentLoc = boardLocations[hare.currentLocation - 1];
+                // YAY! I figured this out!!! Hugh Laurie HURRAH.
+                // Make sure clicked location is adjacent to current location.
+                if (Arrays.binarySearch(currentLoc.adjacentLocations, locClicked.locNum) >= 0)
+                {
+                    //popup("adjLoc contains locClicked!");
+                    // Move player piece
+                    movePiece(hare, locClicked.locNum);
+                    
+                    // Check for win condition
+                    if (hare.currentLocation == 1)
+                    {
+                        whoseTurn = "none";
+                        popup("Congratulations! You won!");
+                        messageLabel.setText("Hurrah! The galaxy has been saved!");
+                    }
+                    else
+                    {
+                        // Switch turns only if player didn't make a losing move in HARDCORE MODE
+                        if (!whoseTurn.equals("none"))
+                        {
+                            whoseTurn = "hounds";
+                            houndsTurn();
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Hound's Turn
+    private void houndsTurn()
+    {
+        if (whoseTurn.equals("hounds")) // Just an extra check. This should be set after EACH turn.
+        {
+            // Pick a horse. I mean, hound.
+            GamePiece chosenHound = chooseHound();
+            
+            // Pick a location to move to. Note: .possibleMoves will already be cleaned up.
+            ArrayList locPool = chosenHound.possibleMoves;
+            //popup(chosenHound.pieceName + ": locPool.get(0) = " + chosenHound.possibleMoves.get(0));
+            
+            // Check to make sure there's a pool before jumping in.
+            // (This is actually flawed logic, i.e., a way to stop
+            // the method from running if the game is over.)
+            if (locPool.size() > 0)
+            {
+                int x = rand.nextInt(locPool.size());
+                //popup("x = " + x);
+            
+                // Elements in an ArrayList are objects, so must typecast. Not that that makes ANY SENSE.
+                Integer chosenLocation = ( Integer ) locPool.get(x);
+                //popup("chosenLocation = " + chosenLocation);
+            
+                /* Timers to mimic a human opponent. Not entirely sure how this works,
+                   but for sure, you want to use SWING timer, and not the normal Java
+                   timer. The swing timer is single-threaded with the entire GUI
+                   whereas the Java timer seems to fork everything, which is
+                   incredibly frustrating. */
+            
+                // Delayed text display.
+                Timer happyTimer = new Timer(1000, e -> messageLabel.setText("Happycat is making his move..."));
+                happyTimer.setRepeats(false);
+                happyTimer.start();
+            
+                // Move the piece to its new location, delayed.
+                Timer moveTimer = new Timer(2750, e -> movePiece(chosenHound, chosenLocation));
+                moveTimer.setRepeats(false);
+                moveTimer.start();
+            
+                /* I tried to check for lose condition here but couldn't get it to trigger
+                   so I moved it to setPossibleMoves. I think the timers might have been
+                   the issue. */
+            }
+        }
+    }
+        
+    // Choose which hound to move.
+    private GamePiece chooseHound()
+    {
+        // Make a list in case we need to remove a stalled hound from the pool. Or throw him a life preserver.
+        List<GamePiece> newHounds = new ArrayList<GamePiece>();
+        newHounds.add(hounds[0]);
+        newHounds.add(hounds[1]);
+        newHounds.add(hounds[2]);
+        
+        // Default piece to move is houndOne. Why? BECAUSE LOGICAL FAIL OTHERWISE.
+        GamePiece whichHound = hounds[0];
+
+        // Assume we haven't yet chosen a hound.
+        int haveHound = 0;
+        
+        while (haveHound == 0) // I lost my auto-indent. Sadness.
+        {
+            // Random choice.
+            int x = rand.nextInt(newHounds.size()); // Note: I can't just use 3 here because list might have shrunk.
+            whichHound = newHounds.get(x);
+            
+            // Testing various bits and pieces. Comment this all out, but leave it in here.
+            //BoardLocation whichLoc = boardLocations[whichHound.currentLocation];
+            //popup("Hound name: " + whichHound.pieceName + ".");
+            //popup("One of its possible moves is " + whichHound.possibleMoves.get(0) + ".");
+            //popup("Hound type: " + whichHound.pieceType + ".");
+            //popup("Hound location: " + whichHound.currentLocation + ".");
+
+            // If the chosen hound has NO available moves, choose another hound.
+            if (whichHound.possibleMoves.size() > 0)
+            {
+                // We have a winner!
+                //popup("We have a winner! possibleMoves.size = " + whichHound.possibleMoves.size());
+                haveHound = 1;
+            }
+            else
+            {
+                // The chosen hound has no available moves, so choose again.
+                newHounds.remove(whichHound);
+                
+                // There are no hounds left. OH NO!
+                if (newHounds.isEmpty())
+                {
+                    whoseTurn = "none";
+                    haveHound = 1; // This is um a cheap way to terminate the while loop.
+                    popup("Good gravy! Happycat has run out of moves.");
+                    messageLabel.setText("I'll get you next time, you delicious opponent!");
+                }
+            }
+        }
+        //popup("whichHound is returning..." + whichHound.pieceName + "!");
+        return whichHound;
+    }
+    
+    // Move a game piece
+    private void movePiece(GamePiece who, Integer where)
+    {
+        GamePiece piece = who;
+        BoardLocation oldLocation = boardLocations[piece.currentLocation - 1];
+        BoardLocation newLocation = boardLocations[where - 1];
+        ImageIcon newIcon;
+        
+        //popup("piece.currentLocation = " + piece.currentLocation);
+        //popup("where = " + where);
+        //popup("oldLocation.locNum = " + oldLocation.locNum);
+        //popup("newLocation.locNum = " + newLocation.locNum);
+        
+        // Which icon to use? I want to do that pipe statement but I forgot how...
+        if (piece.pieceType.equals("hound"))
+        {
+            newIcon = houndIcon;
+        }
+        else
+        {
+            newIcon = hareIcon;
+        }
+        
+        // Hot swappable images.
+        oldLocation.locLabel.setIcon(null);
+        oldLocation.occupied = 0;
+        newLocation.locLabel.setIcon(newIcon);
+        newLocation.occupied = 1;
+        
+        // Set new current location
+        piece.currentLocation = newLocation.locNum;
+        
+        // Clean up
+        setPossibleMoves();
+    }
+    
+    // Clean up possible moves property for ALL pieces
+    private void setPossibleMoves()
+    {
+        // All your game pieces are belong to us
+        GamePiece[] allPieces = new GamePiece[4];
+        allPieces[0] = hounds[0];
+        allPieces[1] = hounds[1];
+        allPieces[2] = hounds[2];
+        allPieces[3] = hare;
+        
+        // all for one and one for all!
+        for (GamePiece piece : allPieces)
+        {
+            // Empty the array list, just to have a clean start
+            piece.possibleMoves.clear();
+            
+            // Where this piece is located on the board
+            BoardLocation pieceLoc = boardLocations[piece.currentLocation - 1];
+            //popup(piece.pieceName + " is at " + pieceLoc.locNum);
+            
+            // Go through every location adjacent to this one
+            for (int i=0; i < pieceLoc.adjacentLocations.length; i++)
+            {
+                // Adjacent location
+                BoardLocation adjLoc = boardLocations[pieceLoc.adjacentLocations[i] - 1];
+                
+                // Location must be unoccupied
+                if (adjLoc.occupied == 0)
+                {
+                    // Unoccupied, so hare can go ahead and add the location
+                   if (piece.pieceType.equals("hare"))
+                    {
+                        piece.possibleMoves.add(pieceLoc.adjacentLocations[i]);
+                    }
+                   // Hound can only add the location if it's not backwards from its current location
+                   else
+                   {
+                       // Check to see if the chosen location is backwards. If not, add it to possibleMoves.
+                       if (Arrays.binarySearch(pieceLoc.backwardLocations, adjLoc.locNum) < 0)
+                       {
+                           //popup("binarySearch returned < 0");
+                           piece.possibleMoves.add(pieceLoc.adjacentLocations[i]);
+                       }
+                       else
+                       {
+                           //popup("binarySearch returned >= 0");
+                       }
+                   }
+                }
+            }
+        }
+        
+        /* Check for lose condition. This is supposed to be in houndsTurn but I couldn't get it to trigger.
+           Actually, this is good because now I can test for a losing move in HARDCORE MODE, which doesn't
+           exist in Version One... */
+        
+        // HARDCORE MODE (not really; it's more like LESS STUPID MODE)
+        // This will engage regardless of turn.
+        if (playType.equals("hardcore"))
+        {
+            // Test to see if ALL THREE HOUNDS are adjacent to the hare.
+            int houndOneNear = Arrays.binarySearch(boardLocations[hare.currentLocation - 1].adjacentLocations, houndOne.currentLocation);
+            int houndTwoNear = Arrays.binarySearch(boardLocations[hare.currentLocation - 1].adjacentLocations, houndTwo.currentLocation);
+            int houndThreeNear = Arrays.binarySearch(boardLocations[hare.currentLocation - 1].adjacentLocations, houndThree.currentLocation);
+ 
+            if ((houndOneNear >= 0) && (houndTwoNear >= 0) && (houndThreeNear >= 0))
+            {
+                //popup("You're surrounded!");
+                whoseTurn = "none";
+                JOptionPane.showMessageDialog(null, "Oh no! You're surrounded. The galaxy is lost...", "I CAN HAS?", JOptionPane.PLAIN_MESSAGE, hareDefeatedIcon);
+                messageLabel.setText("(nom nom nom) DELICIOUS!");
+                BoardLocation hareLoc = boardLocations[hare.currentLocation - 1];
+                hareLoc.locLabel.setIcon(hareDefeatedIcon);
+            }
+            else // This is duplicated code, but it's like... a free expansion pack.
+            {
+                if (whoseTurn.equals("hounds"))
+                {
+                    // Delayed text to give the appearance of switching turns.
+                    Timer textTimer = new Timer(500, e -> messageLabel.setText("Your turn!"));
+                    textTimer.setRepeats(false);
+                    textTimer.start();
+            
+                    // Next!
+                    Timer turnTimer = new Timer(500, e -> whoseTurn = "hare");
+                    turnTimer.setRepeats(false);
+                    turnTimer.start();
+                }
+            }
+        }
+        else
+        {
+            // Traditional game play. A lose condition can only happen on the hounds turn.
+            if (whoseTurn.equals("hounds"))
+            {
+                // No where to run
+                if (hare.possibleMoves.isEmpty())
+                {
+                    whoseTurn = "none";
+                    // This works better without a timer.
+                    JOptionPane.showMessageDialog(null, "Oh no! Happycat has devoured your burger. The galaxy is lost...", "I CAN HAS?", JOptionPane.PLAIN_MESSAGE, hareDefeatedIcon);
+                    messageLabel.setText("(nom nom nom) DELICIOUS!");
+                    BoardLocation hareLoc = boardLocations[hare.currentLocation - 1];
+                    hareLoc.locLabel.setIcon(hareDefeatedIcon);
+                }
+                else 
+                {
+                    // Delayed text to give the appearance of switching turns.
+                    Timer textTimer = new Timer(500, e -> messageLabel.setText("Your turn!"));
+                    textTimer.setRepeats(false);
+                    textTimer.start();
+            
+                    // Next!
+                    Timer turnTimer = new Timer(500, e -> whoseTurn = "hare");
+                    turnTimer.setRepeats(false);
+                    turnTimer.start();
+                }
+            }
+        }
+    }
+    
+    // I can never remember the syntax for JOptionBlahBlah
+    private void popup(String msg)
+    {
+        JOptionPane.showMessageDialog(null, msg, "I CAN HAS?", JOptionPane.PLAIN_MESSAGE, hareIcon);
+    }
+
+    // This will trigger when ANY board location detects a mouse click.
+    private void locationSelected(javax.swing.JLabel locLabel, BoardLocation loc)
+    {
+        //loc.setBorder(new LineBorder(Color.DARK_GRAY,2));
+        //loc.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED));
+        if (whoseTurn.equals("hare"))
+        {
+            // for testing.
+            //popup("Location selected!");
+            haresTurn(loc);
+        }
+    }
+    
+    // I wish these were in numerical order, but the code is auto-generated. *sob*
+    private void locLabel5MouseClicked(java.awt.event.MouseEvent evt) {                                       
+        //locLabel5.setVisible(true);
+        locationSelected(locLabel5, boardLocations[4]);
+    }                                      
+
+    private void locLabel3MouseClicked(java.awt.event.MouseEvent evt) {                                       
+        locationSelected(locLabel3, boardLocations[2]);
+    }                                      
+
+    private void locLabel8MouseClicked(java.awt.event.MouseEvent evt) {                                       
+        locationSelected(locLabel8, boardLocations[7]);
+    }                                      
+
+    private void locLabel6MouseClicked(java.awt.event.MouseEvent evt) {                                       
+        locationSelected(locLabel6, boardLocations[5]);
+    }                                      
+
+    private void locLabel2MouseClicked(java.awt.event.MouseEvent evt) {                                       
+        locationSelected(locLabel2, boardLocations[1]);
+    }                                      
+
+    private void locLabel1MouseClicked(java.awt.event.MouseEvent evt) {                                       
+        locationSelected(locLabel1, boardLocations[0]);
+    }                                      
+
+    private void locLabel4MouseClicked(java.awt.event.MouseEvent evt) {                                       
+        locationSelected(locLabel4, boardLocations[3]);
+    }                                      
+
+    private void locLabel7MouseClicked(java.awt.event.MouseEvent evt) {                                       
+        locationSelected(locLabel7, boardLocations[6]);
+    }                                      
+
+    private void locLabel10MouseClicked(java.awt.event.MouseEvent evt) {                                        
+        locationSelected(locLabel10, boardLocations[9]);
+    }                                       
+
+    private void locLabel11MouseClicked(java.awt.event.MouseEvent evt) {                                        
+        locationSelected(locLabel11, boardLocations[10]);
+    }                                       
+
+    private void locLabel9MouseClicked(java.awt.event.MouseEvent evt) {                                       
+        locationSelected(locLabel9, boardLocations[8]);
+    }                                      
+
+    private void startButtonMouseClicked(java.awt.event.MouseEvent evt) {                                         
+        // Start the game
+        startGame();
+    }                                        
+
+    private void exitButton1MouseClicked(java.awt.event.MouseEvent evt) {                                         
+        // Exit the game
+        System.exit(0);
+    }                                        
+
+    private void skipTurnButtonMouseClicked(java.awt.event.MouseEvent evt) {                                            
+        // testing
+        if (whoseTurn.equals("hare"))
+        {
+            whoseTurn = "hounds";
+            houndsTurn();
+        }
+    }                                           
+
+    private void startHardcoreButtonMouseClicked(java.awt.event.MouseEvent evt) {                                                 
+        // Start the game... IN HARDCORE MODE
+        playType = "hardcore";
+        startGame();
+    }                                               

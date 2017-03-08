@@ -1,0 +1,23 @@
+package my.hounds;
+
+/**
+ *
+ * @author Ajax
+ */
+public class BoardLocation
+{
+    public int locNum; // Human readable location reference
+    public int[] adjacentLocations; // Which locations are adjacent to this one
+    public int[] backwardLocations; // Which locations are "backward" from here (only relevant to hounds)
+    public javax.swing.JLabel locLabel; // The Jlabel that this object represents
+    public int occupied; // Whether or not a game piece is sitting here.
+    
+    public BoardLocation( int loc, javax.swing.JLabel label, int[] adj, int[] back, int occ)
+    {
+        locNum = loc;
+        locLabel = label;
+        adjacentLocations = adj; // These two can be arrays because the size won't change.
+        backwardLocations = back;
+        occupied = occ;
+    }
+}
